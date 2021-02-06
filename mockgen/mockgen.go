@@ -298,6 +298,7 @@ func (g *generator) Generate(pkg *model.Package, outputPkgName string, outputPac
 		}
 	}
 	im["testing"] = true
+	im["github.com/google/go-cmp/cmp"] = true
 
 	// Sort keys to make import alias generation predictable
 	sortedPaths := make([]string, len(im))
@@ -525,7 +526,7 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 
 	g.p("func (m *%v) deepEqual(got, want interface{}, argName string) {", mockType)
 	g.in()
-	g.p("if !reflect.DeepEqual(got, want) {")
+	g.p("if !cmp.Equal(got, want) {")
 	g.in()
 	g.p("formattedWant, err1 := json.MarshalIndent(want, \"\", \"  \")")
 	g.p("formattedGot, err2 := json.MarshalIndent(got, \"\", \"  \")")
@@ -657,11 +658,13 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 		g.p("if len(m.expecter.mock.calls%v) == 0 {", m.Name)
 		g.in()
 		g.p("m.expecter.mock.error(\"%v has not been called!\")", m.Name)
+		g.p("return")
 		g.out()
 		g.p("}")
 		g.p("if len(m.expecter.mock.calls%v) > 1 {", m.Name)
 		g.in()
 		g.p("m.expecter.mock.error(\"%v has been called multiple times. Can only use matchers for one call!\")", m.Name)
+		g.p("return")
 		g.out()
 		g.p("}")
 		if len(m.In) > 0 {

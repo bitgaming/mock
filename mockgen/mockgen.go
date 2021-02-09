@@ -531,9 +531,13 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 	g.p("}")
 	g.p("")
 
-	g.p("func (m *%v) deepEqual(got, want interface{}, argName string) {", mockType)
+	g.p("func (m *%v) deepEqual(got, want interface{}) bool {", mockType)
+	g.p("return cmp.Equal(got, want, cmp.Exporter(func(t reflect.Type) bool { return true }))")
+	g.p("}")
+
+	g.p("func (m *%v) ASSERT_DEEP_EQUAL(got, want interface{}, argName string) {", mockType)
 	g.in()
-	g.p("if !cmp.Equal(got, want, cmp.Exporter(func(t reflect.Type) bool { return true })) {")
+	g.p("if !m.deepEqual(got, want) {")
 	g.in()
 	g.p("formattedWant, err1 := json.MarshalIndent(want, \"\", \"  \")")
 	g.p("formattedGot, err2 := json.MarshalIndent(got, \"\", \"  \")")
@@ -666,20 +670,53 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 		g.p("return")
 		g.out()
 		g.p("}")
-		g.p("if len(m.expecter.mock.calls%v) > 1 {", m.Name)
+		g.p("if len(m.expecter.mock.calls%v) == 1 {", m.Name)
 		g.in()
-		g.p("m.expecter.mock.errorf(\"%v has been called multiple times. Can only use matchers for one call!\")", m.Name)
-		g.p("return")
-		g.out()
-		g.p("}")
 		if len(m.In) > 0 {
 			g.p("funcCall := m.expecter.mock.calls%v[0]", m.Name)
 			for i, in := range m.In {
-				g.p("m.expecter.mock.deepEqual(funcCall.%v, %v, \"%v\")", inputArgName(in, i), inputArgName(in, i), inputArgName(in, i))
+				g.p("m.expecter.mock.ASSERT_DEEP_EQUAL(funcCall.%v, %v, \"%v\")", inputArgName(in, i), inputArgName(in, i), inputArgName(in, i))
 			}
 		}
+		g.p("return")
+		g.out()
+		g.p("}") // if len
+
+		// when it was called multiple times
+		g.p("for _, funcCall := range m.expecter.mock.calls%v {", m.Name)
+		g.in()
+		for i, in := range m.In {
+			ifStr := "  "
+			if i == 0 {
+				ifStr = "if "
+			}
+			andStr := "&&"
+			if i == len(m.In)-1 {
+				andStr = "{"
+			}
+			g.p("%vm.expecter.mock.deepEqual(funcCall.%v, %v)%v", ifStr, in.Name, in.Name, andStr)
+		}
+		g.in()
+		g.p("return")
 		g.out()
 		g.p("}")
+		g.out()
+		g.p("}") // end for
+
+		// none of the calls matched the expected params
+		g.p("calls := make([]string, len(m.expecter.mock.calls%v))", m.Name)
+		g.p("for i := 0; i < len(m.expecter.mock.calls%v); i++ {", m.Name)
+		g.p("calls[i] = fmt.Sprintf(\"%%+v\", m.expecter.mock.calls%v[i])", m.Name)
+		g.p("}")
+		g.p("callStr := strings.Join(calls, \"\\n\")")
+		argList := make([]string, len(m.In))
+		for i, in := range m.In {
+			argList[i] = in.Name
+		}
+		g.p("m.expecter.mock.errorf(\"Expected %v to have been called with %%v but none of the calls match:\\n%%v\", []interface{}{%v}, callStr)", m.Name, strings.Join(argList, ", "))
+
+		g.out()
+		g.p("}") // func
 
 		g.p("func (m *expecterHelper%v) %vFunc(f func(%v)) {", intf.Name, m.Name, argString)
 		g.in()

@@ -526,7 +526,7 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 
 	g.p("func (m *%v) deepEqual(got, want interface{}, argName string) {", mockType)
 	g.in()
-	g.p("if !cmp.Equal(got, want) {")
+	g.p("if !cmp.Equal(got, want, cmp.Exporter(func(t reflect.Type) bool { return true })) {")
 	g.in()
 	g.p("formattedWant, err1 := json.MarshalIndent(want, \"\", \"  \")")
 	g.p("formattedGot, err2 := json.MarshalIndent(got, \"\", \"  \")")

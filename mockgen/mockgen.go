@@ -678,9 +678,34 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 				g.p("m.expecter.mock.deepEqual(funcCall.%v, %v, \"%v\")", inputArgName(in, i), inputArgName(in, i), inputArgName(in, i))
 			}
 		}
-
 		g.out()
 		g.p("}")
+
+		g.p("func (m *expecterHelper%v) %vFunc(f func(%v)) {", intf.Name, m.Name, argString)
+		g.in()
+		g.p("if len(m.expecter.mock.calls%v) == 0 {", m.Name)
+		g.in()
+		g.p("m.expecter.mock.errorf(\"%v has not been called!\")", m.Name)
+		g.p("return")
+		g.out()
+		g.p("}")
+		g.p("if len(m.expecter.mock.calls%v) > 1 {", m.Name)
+		g.in()
+		g.p("m.expecter.mock.errorf(\"%v has been called multiple times. Can only use matchers for one call!\")", m.Name)
+		g.p("return")
+		g.out()
+		g.p("}")
+		if len(m.In) > 0 {
+			g.p("funcCall := m.expecter.mock.calls%v[0]", m.Name)
+			funcArgs := make([]string, len(m.In))
+			for i, in := range m.In {
+				funcArgs[i] = fmt.Sprintf("funcCall.%v", inputArgName(in, i))
+			}
+			g.p("f(%v)", strings.Join(funcArgs, ", "))
+		}
+		g.out()
+		g.p("}")
+
 	}
 
 	// g.p("// %vMockRecorder is the mock recorder for %v.", mockType, mockType)

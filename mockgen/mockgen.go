@@ -385,6 +385,7 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 	g.p("type %v struct {", mockType)
 	g.in()
 	g.p("t ErrorReporter%v", intf.Name)
+	g.p("printStackTrace bool")
 	g.p("")
 	for _, m := range intf.Methods {
 		g.p("allow%v allow%v%v", m.Name, intf.Name, m.Name)
@@ -470,7 +471,7 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 	g.p("}")
 
 	g.p("// New%v creates a new mock instance.", mockType)
-	g.p("func New%v(t ErrorReporter%v) *%v {", mockType, intf.Name, mockType)
+	g.p("func New%v(t ErrorReporter%v, printStackTrace ...bool) *%v {", mockType, intf.Name, mockType)
 	g.in()
 	g.p("return &%v{t: t}", mockType)
 	g.out()
@@ -560,6 +561,11 @@ func (g *generator) GenerateMockInterface(intf *model.Interface, outputPackagePa
 
 	g.p("func (m *%v) printStack() {", mockType)
 	g.in()
+	g.p("if !m.printStackTrace {")
+	g.in()
+	g.p("return")
+	g.out()
+	g.p("}")
 	g.p("stack := debug.Stack()")
 	g.p("arrayStack := strings.Split(string(stack), \"\\n\")")
 	g.p("for i := 0; i < len(arrayStack); i++ {")

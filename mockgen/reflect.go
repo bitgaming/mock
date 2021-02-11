@@ -30,7 +30,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/bitgaming/mock/mockgen/model"
+	"github.com/golang/mock/mockgen/model"
 )
 
 var (
@@ -191,7 +191,7 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/bitgaming/mock/mockgen/model"
+	"github.com/golang/mock/mockgen/model"
 
 	pkg_ {{printf "%q" .ImportPath}}
 )

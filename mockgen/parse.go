@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bitgaming/mock/mockgen/model"
+	"github.com/golang/mock/mockgen/model"
 	"golang.org/x/mod/modfile"
 )
 

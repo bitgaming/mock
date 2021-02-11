@@ -7,8 +7,8 @@ package users_test
 import (
 	reflect "reflect"
 
-	gomock "github.com/bitgaming/mock/gomock"
-	mock_in_test_package "github.com/bitgaming/mock/mockgen/internal/tests/mock_in_test_package"
+	gomock "github.com/golang/mock/gomock"
+	mock_in_test_package "github.com/golang/mock/mockgen/internal/tests/mock_in_test_package"
 )
 
 // MockFinder is a mock of Finder interface.

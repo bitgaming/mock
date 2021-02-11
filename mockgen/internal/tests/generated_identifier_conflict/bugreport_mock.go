@@ -7,7 +7,7 @@ package bugreport
 import (
 	reflect "reflect"
 
-	gomock "github.com/bitgaming/mock/gomock"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockExample is a mock of Example interface.

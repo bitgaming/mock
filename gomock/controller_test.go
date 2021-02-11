@@ -21,7 +21,7 @@ import (
 
 	"strings"
 
-	"github.com/bitgaming/mock/gomock"
+	"github.com/golang/mock/gomock"
 )
 
 type ErrorReporter struct {

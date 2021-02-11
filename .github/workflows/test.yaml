@@ -26,7 +26,7 @@ jobs:
     # Needed for versions <1.14 tests
     - name: Install mock
       run: |
-        GO111MODULE=off go get github.com/golang/mock | true
+        GO111MODULE=off go get github.com/bitgaming/mock | true
 
     - name: Vet and build
       run: |
@@ -35,7 +35,7 @@ jobs:
 
     - name: Install tools
       run: |
-        go install github.com/golang/mock/mockgen
+        go install github.com/bitgaming/mock/mockgen
         GO111MODULE=off go get -u golang.org/x/lint/golint
 
     - name: Run test scripts
@@ -52,4 +52,4 @@ jobs:
           pushd $(dirname $i)
           go test ./...
           popd
-        done 
+        done
